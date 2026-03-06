@@ -1,73 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mars Landing Site Analysis</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-900 text-white font-sans">
-    <div class="container mx-auto p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-red-500">Mars Landing Safety Analysis</h1>
-            <p class="text-gray-400 mt-2">Using a U-Net model to predict safe landing zones from terrain data.</p>
-        </header>
+<html>
+  <head>
+    <title>Mars Landing AI</title>
+  </head>
 
-        <main class="bg-gray-800 rounded-lg shadow-xl p-6 text-center">
-            <h2 class="text-2xl font-semibold mb-4">Generate a Prediction</h2>
-            <p class="text-gray-400 mb-6">Click the button to generate a random terrain patch and see the model's safety prediction.</p>
-            
-            <button id="predict-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                Analyze Random Site
-            </button>
+  <body>
+    <h2>Mars Landing Site Detector</h2>
 
-            <div id="loading" class="hidden mt-6">
-                <p>Analyzing...</p>
-            </div>
+    <input id="x1" placeholder="x1" />
+    <input id="y1" placeholder="y1" />
 
-            <div id="result" class="mt-8 hidden">
-                <h3 class="text-xl font-semibold mb-4">Prediction Result</h3>
-                <div class="flex justify-center">
-                    <img id="result-img" src="" alt="Prediction Map" class="border-4 border-gray-700 rounded-lg"/>
-                </div>
-                <div class="flex justify-center space-x-4 mt-4 text-sm">
-                    <p><span class="font-bold text-green-500">■</span> Safe</p>
-                    <p><span class="font-bold text-orange-500">■</span> Moderate</p>
-                    <p><span class="font-bold text-red-500">■</span> Unsafe</p>
-                </div>
-            </div>
-        </main>
-    </div>
+    <input id="x2" placeholder="x2" />
+    <input id="y2" placeholder="y2" />
+
+    <button onclick="getLanding()">Find Landing Site</button>
+
+    <p id="result"></p>
 
     <script>
-        const predictBtn = document.getElementById('predict-btn');
-        const resultDiv = document.getElementById('result');
-        const resultImg = document.getElementById('result-img');
-        const loadingDiv = document.getElementById('loading');
-
-        predictBtn.addEventListener('click', async () => {
-            loadingDiv.classList.remove('hidden');
-            resultDiv.classList.add('hidden');
-            predictBtn.disabled = true;
-
-            try {
-                const response = await fetch('/predict', { method: 'POST' });
-                const data = await response.json();
-
-                if (data.prediction_map) {
-                    resultImg.src = data.prediction_map;
-                    resultDiv.classList.remove('hidden');
-                } else {
-                    alert('Error: ' + (data.error || 'Unknown error occurred.'));
-                }
-            } catch (error) {
-                console.error('Prediction failed:', error);
-                alert('Prediction request failed. Check the console for details.');
-            } finally {
-                loadingDiv.classList.add('hidden');
-                predictBtn.disabled = false;
-            }
-        });
+      async function getLanding() {
+        let data = {
+          x1: parseInt(document.getElementById('x1').value),
+          y1: parseInt(document.getElementById('y1').value),
+          x2: parseInt(document.getElementById('x2').value),
+          y2: parseInt(document.getElementById('y2').value)
+        }
+      
+        let response = await fetch('http://localhost:5000/landing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+      
+        let result = await response.json()
+      
+        document.getElementById('result').innerText = 'Best Landing Coordinate: ' + result.landing_x + ' , ' + result.landing_y
+      }
     </script>
-</body>
+  </body>
 </html>
